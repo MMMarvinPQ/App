@@ -1,23 +1,30 @@
 import React from 'react';
 import App from './App';
-import ApolloClient from 'apollo-client';
-import { InMemoryCache } from 'apollo-cache-inmemory';
-import { createHttpLink } from 'apollo-link-http';
-import { ApolloProvider } from '@apollo/react-hooks';
-import { setContext } from 'apollo-link-context';
+import {
+  ApolloClient,
+  InMemoryCache,
+  ApolloProvider,
+  HttpLink
+} from "@apollo/client"; 
 
-const httpLink = createHttpLink({
+import { setContext } from "@apollo/client/link/context";
+
+const httpLink = new HttpLink({
   uri: 'http://localhost:5000/'
 });
 
-const authLink = setContext(() => {
+const authLink = setContext((_, { headers }) => {
+  // get the authentication token from local storage if it exists
   const token = localStorage.getItem('jwtToken');
+  // return the headers to the context so httpLink can read them
   return {
     headers: {
-      Authorization: token ? `Bearer ${token}` : ''
+      ...headers,
+      authorization: token ? `Bearer ${token}` : "",
     }
-  };
+  }
 });
+
 
 const client = new ApolloClient({
   link: authLink.concat(httpLink),
